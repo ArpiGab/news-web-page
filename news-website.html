@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News 24 - Latest Breaking News</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+
+        /* Header Styles */
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        nav {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        nav a:hover, nav a.active {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .search-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-bar {
+            padding: 0.6rem 2.5rem 0.6rem 1rem;
+            border: none;
+            border-radius: 25px;
+            width: 250px;
+            outline: none;
+            transition: width 0.3s;
+        }
+
+        .search-bar:focus {
+            width: 300px;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 10px;
+            color: #667eea;
+            cursor: pointer;
+        }
+
+        .menu-icon {
+            display: none;
+            cursor: pointer;
+            color: white;
+        }
+
+        /* Loading Spinner */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 3rem;
+            font-size: 1.2rem;
+            color: #667eea;
+        }
+
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-right: 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Error Message */
+        .error-message {
+            background: #fee;
+            border: 1px solid #fcc;
+            color: #c33;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 2rem;
+            text-align: center;
+        }
+
+        /* Main Container */
+        .main-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+
+        /* Trending Sidebar */
+        .trending-sidebar {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            height: fit-content;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .trending-sidebar h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .trending-item {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .trending-item:hover {
+            transform: translateX(5px);
+        }
+
+        .trending-thumbnail {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            object-fit: cover;
+            flex-shrink: 0;
+            background: #e2e8f0;
+        }
+
+        .trending-content h3 {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            color: #2d3748;
+            line-height: 1.4;
+        }
+
+        .trending-time {
+            font-size: 0.75rem;
+            color: #718096;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Breaking News */
+        .breaking-news {
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            height: 500px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            background: #e2e8f0;
+        }
+
+        .breaking-news img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+
+        .breaking-news:hover img {
+            transform: scale(1.05);
+        }
+
+        .breaking-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            padding: 3rem 2rem 2rem;
+            color: white;
+        }
+
+        .breaking-category {
+            display: inline-block;
+            background: #667eea;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .breaking-overlay h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .breaking-overlay p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        /* News Cards Grid */
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .news-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .news-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .news-card-img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            transition: transform 0.5s;
+            background: #e2e8f0;
+        }
+
+        .news-card:hover .news-card-img {
+            transform: scale(1.1);
+        }
+
+        .news-card-content {
+            padding: 1.2rem;
+        }
+
+        .news-card-category {
+            color: #667eea;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .news-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.8rem;
+            line-height: 1.4;
+            color: #2d3748;
+        }
+
+        .news-card-meta {
+            display: flex;
+            justify-content: space-between;
+            color: #718096;
+            font-size: 0.85rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+
+            .trending-sidebar {
+                order: 2;
+            }
+
+            nav {
+                display: none;
+            }
+
+            .menu-icon {
+                display: block;
+            }
+
+            .nav-mobile {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                padding: 1rem;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .nav-mobile.active {
+                display: flex;
+            }
+
+            .breaking-overlay h1 {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-container {
+                padding: 0 1rem;
+            }
+
+            .main-container {
+                padding: 0 1rem;
+            }
+
+            .search-bar {
+                width: 150px;
+            }
+
+            .search-bar:focus {
+                width: 200px;
+            }
+
+            .breaking-news {
+                height: 350px;
+            }
+
+            .breaking-overlay h1 {
+                font-size: 1.5rem;
+            }
+
+            .breaking-overlay p {
+                font-size: 0.95rem;
+            }
+
+            .news-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <div class="logo">📰 News 24</div>
+            <nav id="mainNav">
+                <a href="#" class="active" data-category="sports">Sports</a>
+                <a href="#" data-category="tech">Technology</a>
+                <a href="#" data-category="business">Business</a>
+                <a href="#" data-category="entertainment">Entertainment</a>
+                <a href="#" data-category="general">Latest Updates</a>
+            </nav>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div class="search-container">
+                    <input type="text" class="search-bar" placeholder="Search news...">
+                    <i data-lucide="search" class="search-icon" width="20" height="20"></i>
+                </div>
+                <i data-lucide="menu" class="menu-icon" id="menuIcon" width="28" height="28"></i>
+            </div>
+        </div>
+        <nav class="nav-mobile" id="mobileNav">
+            <a href="#" class="active" data-category="sports">Sports</a>
+            <a href="#" data-category="tech">Technology</a>
+            <a href="#" data-category="business">Business</a>
+            <a href="#" data-category="entertainment">Entertainment</a>
+            <a href="#" data-category="general">Latest Updates</a>
+        </nav>
+    </header>
+
+    <div class="main-container">
+        <aside class="trending-sidebar">
+            <h2><i data-lucide="trending-up" width="24" height="24"></i> Trendy News</h2>
+            <div id="trendingNews">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading trending news...
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <article class="breaking-news" id="breakingNews">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading breaking news...
+                </div>
+            </article>
+
+            <section class="news-grid" id="newsGrid">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading latest news...
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const API_TOKEN = '6tYEUxTMPhjehKjT3BlmcYsehTdlFNORGmidMAs6';
+        const API_BASE_URL = 'https://api.thenewsapi.com/v1/news/top';
+        
+        let allNews = [];
+        let currentCategory = 'sports';
+
+        // Fetch news from API
+        async function fetchNews(category = 'general', limit = 10) {
+            try {
+                const url = `${API_BASE_URL}?api_token=${API_TOKEN}&locale=us&limit=${limit}${category !== 'general' ? `&categories=${category}` : ''}`;
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                return data.data || [];
+            } catch (error) {
+                console.error('Error fetching news:', error);
+                return [];
+            }
+        }
+
+        // Format time ago
+        function timeAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+            
+            if (seconds < 60) return 'Just now';
+            if (seconds < 3600) return Math.floor(seconds / 60) + ' min ago';
+            if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
+            return Math.floor(seconds / 86400) + 'd ago';
+        }
+
+        // Get category emoji
+        function getCategoryEmoji(categories) {
+            if (!categories || categories.length === 0) return '📰';
+            const category = categories[0].toLowerCase();
+            const emojiMap = {
+                'sports': '⚽',
+                'tech': '💻',
+                'technology': '💻',
+                'business': '💼',
+                'entertainment': '🎬',
+                'science': '🔬',
+                'health': '🏥',
+                'general': '📰'
+            };
+            return emojiMap[category] || '📰';
+        }
+
+        // Render breaking news
+        function renderBreakingNews(article) {
+            const breakingSection = document.getElementById('breakingNews');
+            const imageUrl = article.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200&h=800&fit=crop';
+            const category = article.categories && article.categories.length > 0 ? article.categories[0] : 'Breaking News';
+            const emoji = getCategoryEmoji(article.categories);
+            
+            breakingSection.innerHTML = `
+                <img src="${imageUrl}" alt="${article.title}" onerror="this.src='https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200&h=800&fit=crop'">
+                <div class="breaking-overlay">
+                    <span class="breaking-category">${emoji} ${category}</span>
+                    <h1>${article.title}</h1>
+                    <p>${article.description || article.snippet || ''}</p>
+                </div>
+            `;
+            
+            breakingSection.onclick = () => {
+                if (article.url) window.open(article.url, '_blank');
+            };
+        }
+
+        // Render trending news
+        function renderTrendingNews(articles) {
+            const trendingContainer = document.getElementById('trendingNews');
+            
+            if (!articles || articles.length === 0) {
+                trendingContainer.innerHTML = '<p style="color: #718096;">No trending news available</p>';
+                return;
+            }
+            
+            trendingContainer.innerHTML = articles.slice(0, 5).map(article => {
+                const imageUrl = article.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=200&h=200&fit=crop';
+                return `
+                    <div class="trending-item" onclick="window.open('${article.url}', '_blank')">
+                        <img src="${imageUrl}" alt="${article.title}" class="trending-thumbnail" onerror="this.src='https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=200&h=200&fit=crop'">
+                        <div class="trending-content">
+                            <h3>${article.title}</h3>
+                            <div class="trending-time">
+                                <i data-lucide="clock" width="14" height="14"></i>
+                                ${timeAgo(article.published_at)}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            lucide.createIcons();
+        }
+
+        // Render news grid
+        function renderNewsGrid(articles) {
+            const newsGrid = document.getElementById('newsGrid');
+            
+            if (!articles || articles.length === 0) {
+                newsGrid.innerHTML = '<div class="error-message">No news articles found. Please try a different category.</div>';
+                return;
+            }
+            
+            newsGrid.innerHTML = articles.map(article => {
+                const imageUrl = article.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&h=300&fit=crop';
+                const category = article.categories && article.categories.length > 0 ? article.categories[0] : 'News';
+                const emoji = getCategoryEmoji(article.categories);
+                const source = article.source || 'Unknown Source';
+                
+                return `
+                    <article class="news-card" onclick="window.open('${article.url}', '_blank')">
+                        <img src="${imageUrl}" alt="${article.title}" class="news-card-img" onerror="this.src='https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&h=300&fit=crop'">
+                        <div class="news-card-content">
+                            <div class="news-card-category">${emoji} ${category}</div>
+                            <h3>${article.title}</h3>
+                            <div class="news-card-meta">
+                                <span><i data-lucide="user" width="14" height="14"></i> ${source}</span>
+                                <span><i data-lucide="clock" width="14" height="14"></i> ${timeAgo(article.published_at)}</span>
+                            </div>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+            
+            lucide.createIcons();
+        }
+
+        // Load all news
+        async function loadNews(category = 'sports') {
+            try {
+                const news = await fetchNews(category, 15);
+                allNews = news;
+                
+                if (news && news.length > 0) {
+                    renderBreakingNews(news[0]);
+                    renderTrendingNews(news.slice(1, 6));
+                    renderNewsGrid(news.slice(1, 11));
+                } else {
+                    document.getElementById('breakingNews').innerHTML = '<div class="error-message">Unable to load news. Please try again later.</div>';
+                    document.getElementById('trendingNews').innerHTML = '<p style="color: #718096;">No news available</p>';
+                    document.getElementById('newsGrid').innerHTML = '<div class="error-message">No news articles found.</div>';
+                }
+            } catch (error) {
+                console.error('Error loading news:', error);
+                document.getElementById('breakingNews').innerHTML = '<div class="error-message">Error loading news. Please check your connection.</div>';
+            }
+        }
+
+        // Initialize
+        lucide.createIcons();
+        loadNews(currentCategory);
+
+        // Mobile menu toggle
+        const menuIcon = document.getElementById('menuIcon');
+        const mobileNav = document.getElementById('mobileNav');
+
+        menuIcon.addEventListener('click', () => {
+            mobileNav.classList.toggle('active');
+        });
+
+        // Active navigation link and category filtering
+        const navLinks = document.querySelectorAll('nav a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                navLinks.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+                
+                const category = link.getAttribute('data-category');
+                currentCategory = category;
+                
+                // Show loading state
+                document.getElementById('breakingNews').innerHTML = '<div class="loading"><div class="spinner"></div>Loading...</div>';
+                document.getElementById('trendingNews').innerHTML = '<div class="loading"><div class="spinner"></div>Loading...</div>';
+                document.getElementById('newsGrid').innerHTML = '<div class="loading"><div class="spinner"></div>Loading...</div>';
+                
+                // Load new category
+                loadNews(category);
+                
+                // Close mobile menu if open
+                if (mobileNav.classList.contains('active')) {
+                    mobileNav.classList.remove('active');
+                }
+            });
+        });
+
+        // Search functionality
+        const searchBar = document.querySelector('.search-bar');
+        searchBar.addEventListener('keypress', async (e) => {
+            if (e.key === 'Enter' && searchBar.value.trim()) {
+                const searchTerm = searchBar.value.trim().toLowerCase();
+                const filtered = allNews.filter(article => 
+                    article.title.toLowerCase().includes(searchTerm) ||
+                    (article.description && article.description.toLowerCase().includes(searchTerm))
+                );
+                
+                if (filtered.length > 0) {
+                    renderBreakingNews(filtered[0]);
+                    renderNewsGrid(filtered.slice(1));
+                } else {
+                    document.getElementById('newsGrid').innerHTML = '<div class="error-message">No results found for "' + searchTerm + '"</div>';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
